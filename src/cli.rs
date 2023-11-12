@@ -27,6 +27,7 @@ pub fn cli() -> Result<()>{
 
 	let options = vec!["[Create route]","[Create component]"];
 	let mut selected = 0;
+	
 
 	loop {
 		terminal.draw(|frame|{
@@ -44,14 +45,29 @@ pub fn cli() -> Result<()>{
 			let header = layout[0];
 			let body = layout[1];
 
+			let body_layout = Layout::default()
+				.direction(Direction::Vertical)
+				.constraints(vec![
+					Constraint::Percentage(10),
+					Constraint::Percentage(80),
+				])
+				.split(body);
+
+			let question = body_layout[0];
+			let options = body_layout[1];
+
 			frame.render_widget(
 				Paragraph::new("Boilerplate builder (press 'q' to quit)").white(),
 				header
 			);
 			frame.render_widget(
 				Paragraph::new("Hello this is a test\nYou like it?").white(),
-				body
-			);		
+				question
+			);	
+			frame.render_widget(
+				Paragraph::new("f").white(),
+				options
+			);
 		})?;
 
 		if event::poll(Duration::from_secs(4))? {
