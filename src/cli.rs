@@ -36,7 +36,7 @@ pub fn cli() -> Result<()>{
 				.split(frame.size());	
 
 			let title = layout[0];
-			let boqdy = layout[1];
+			let body = layout[1];
 
 			let body_layout = Layout::default()
 				.direction(Direction::Vertical)
@@ -86,7 +86,11 @@ pub fn cli() -> Result<()>{
 	Ok(())
 }
 
-fn get_input() -> Result<KeyCode>{
+fn split_layout(){
+	
+}
+
+pub fn get_input() -> Result<KeyCode>{
 	if event::poll(Duration::from_secs(4))? {
 		match read()? {
 			Event::Key(KeyEvent{code,kind,..}) => {

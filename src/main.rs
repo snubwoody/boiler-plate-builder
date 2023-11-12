@@ -1,14 +1,14 @@
-use std::future::Future;
-use std::io::{self, Error};
+use std::io::{self, stdout, Write};
 use std::fs::{create_dir, self};
 use std::env;
-use std::path::{PathBuf, Path};
-use boilerplate_builder::Component::{*,self};
-use boilerplate_builder::file_to_string;
-use std::{time::Duration};
-use crossterm::event::{poll, read, Event,KeyCode};
+use std::path::PathBuf;
+use crossterm::{
+	execute,
+	terminal::{EnterAlternateScreen,LeaveAlternateScreen},
+	event::{self,KeyCode::{*, self},read,Event,KeyEvent, KeyEventKind}
+};
 mod cli;
-use cli::cli;
+use cli::get_input;
 
 
 
@@ -24,10 +24,30 @@ fn main() {
 	init(src_dir);
 
 	//cli();
-	cli().unwrap();
-	
+	//cli().unwrap();
 
-	
+	execute!(stdout(),EnterAlternateScreen).unwrap();
+
+	let options = vec!["Generate Component","Generate route"];
+
+	loop {
+		print!("\x1B[2J");
+		print!("\x1B[H");
+		print!("\x1B[1;32mhi");
+		println!("Hi");
+		
+		options.iter().for_each(|t|println!("{}",t));
+		match get_input().unwrap() {
+			Char('q') => {
+				break;
+			}
+			_=>{}
+		}
+
+		io::stdout().flush().unwrap();
+	}
+
+	execute!(stdout(),LeaveAlternateScreen).unwrap();
 }
 
 fn init(src_dir:PathBuf){
@@ -45,35 +65,4 @@ fn init(src_dir:PathBuf){
 
 
 
-fn generate_component(component:Component,src_dir:PathBuf){
-	match component {
-		navbar => {
-			fs::write(
-				src_dir.join("components/navbar.tsx"),
-				file_to_string(PathBuf::from("src/navbar.txt")).unwrap()
-			).unwrap();
-		},
-		button => {
-			fs::write(
-				src_dir.join("components/button.tsx"),
-				file_to_string(PathBuf::from("src/button.txt")).unwrap()
-			).unwrap();
-		}
-	}
-}
-
-fn generate_route(app_dir:PathBuf,route_name:&str) -> Result<&str,io::Error>{
-	match create_dir(app_dir.join(route_name)) {
-		Ok(_) => {
-			let route_dir = app_dir.join(route_name);
-			fs::write(route_dir.join("page.tsx"), "").unwrap();
-			return Ok("success");
-		}
-		Err(err) => {
-			return Err(err)
-		}
-	}
-	
-	
-}
 
