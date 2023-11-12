@@ -1,13 +1,15 @@
-
-use std::io::{Read,self, Error};
-use std::fs::{File,create_dir, self};
+use std::future::Future;
+use std::io::{self, Error};
+use std::fs::{create_dir, self};
 use std::env;
 use std::path::{PathBuf, Path};
 use boilerplate_builder::Component::{*,self};
 use boilerplate_builder::file_to_string;
-use colored::*;
-use std::process::Command;
-use console::Term;
+use std::{time::Duration};
+use crossterm::event::{poll, read, Event,KeyCode};
+mod cli;
+use cli::cli;
+
 
 
 fn main() {
@@ -19,13 +21,18 @@ fn main() {
 	let app_dir = src_dir.join("app");
 
 	//TODO global.css not clearing as intended
-	
-	let _k: fs::ReadDir;
+	init(src_dir);
 
+	//cli();
+	cli().unwrap();
+	
+
+	
+}
+
+fn init(src_dir:PathBuf){
 	match fs::read_dir(src_dir.join("components")) {
-		Ok(files) => {
-			_k = files
-		}
+		Ok(files) => {}
 		Err(err) => {
 
 			if(err.raw_os_error().unwrap() == 3) {
@@ -34,18 +41,6 @@ fn main() {
 						
 		}
 	}
-
-	println!("What would you like to do?");
-
-	let options = vec![
-		Option::new(true, "Generate component"),
-		Option::new(false, "Generate route"),
-	];
-
-	options.iter().for_each(|option| option.print());
-
-
-	println!("still here")
 }
 
 
@@ -82,23 +77,3 @@ fn generate_route(app_dir:PathBuf,route_name:&str) -> Result<&str,io::Error>{
 	
 }
 
-struct Option<'a>{
-	selected:bool,
-	text:&'a str
-}
-
-impl<'a> Option<'a> {
-
-	fn new(selected:bool,text:&'a str) -> Self {
-		Option { selected, text }
-	}
-
-	fn print(&self) {
-		if self.selected {
-			print!("[{}] ",self.text.blue().underline());
-		}
-		else {
-			print!{"[{}] ",self.text};
-		}	
-	}
-}
