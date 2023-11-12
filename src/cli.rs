@@ -1,20 +1,18 @@
-use std::io::{self, Error};
-use std::ops::Index;
 use std::time::Duration;
-use colored::*;
-use crossterm::event::KeyEvent;
 use crossterm::{
-    event::{self,KeyCode::*, KeyEventKind,poll,read,Event},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, 
-	LeaveAlternateScreen,Clear,ClearType},
-    ExecutableCommand,
-	execute
+    event::{self,KeyCode::{*, self},read,Event,KeyEvent, KeyEventKind},
+    terminal::{
+		disable_raw_mode, 
+		enable_raw_mode, 
+		EnterAlternateScreen, 
+		LeaveAlternateScreen
+	},
+    ExecutableCommand
 };
 use ratatui::{
     prelude::*,
-    widgets::Paragraph
+    widgets::*
 };
-
 use std::io::{stdout, Result};
 
 
@@ -25,15 +23,10 @@ pub fn cli() -> Result<()>{
 	let mut terminal = Terminal::new(backend)?;
 	terminal.clear()?;
 
-	let options = vec!["[Create route]","[Create component]"];
-	let mut selected = 0;
-	
+	let header_text = "hello";
 
 	loop {
 		terminal.draw(|frame|{
-			let area = frame.size();
-			
-
 			let layout = Layout::default()
 				.direction(Direction::Vertical)
 				.constraints(vec![
@@ -42,8 +35,8 @@ pub fn cli() -> Result<()>{
 				])
 				.split(frame.size());	
 
-			let header = layout[0];
-			let body = layout[1];
+			let title = layout[0];
+			let boqdy = layout[1];
 
 			let body_layout = Layout::default()
 				.direction(Direction::Vertical)
@@ -53,47 +46,75 @@ pub fn cli() -> Result<()>{
 				])
 				.split(body);
 
-			let question = body_layout[0];
+			let header = body_layout[0];
 			let options = body_layout[1];
+
 
 			frame.render_widget(
 				Paragraph::new("Boilerplate builder (press 'q' to quit)").white(),
-				header
+				title
 			);
 			frame.render_widget(
-				Paragraph::new("Hello this is a test\nYou like it?").white(),
-				question
-			);	
+				Paragraph::new(header_text).white(),
+				header
+			);
+
+			let items = [ListItem::new("React"),ListItem::new("Vue"),ListItem::new("Angular")];	
+			
 			frame.render_widget(
-				Paragraph::new("f").white(),
+				List::new(items)
+				.block(Block::default().title("What framework are you using?").borders(Borders::ALL))
+    			.style(Style::default().fg(Color::White))
+    			.highlight_style(Style::default())
+    			.highlight_symbol(">>"),
 				options
 			);
 		})?;
 
-		if event::poll(Duration::from_secs(4))? {
-			match read()? {
-				Event::Key(KeyEvent{code,..}) => match code {
-					Enter => {
-					},
-					Char('q') => {
-						break;
-					}
-					_=>{}
-					}
-
-				_=>{}
+		match  get_input()? {
+			Char('q') => {
+				break;
 			}
+			_=>{}
 		}
+
 	}
 
 	stdout().execute(LeaveAlternateScreen)?;
 	disable_raw_mode()?;
 
-	
-
 	Ok(())
 }
 
+fn get_input() -> Result<KeyCode>{
+	if event::poll(Duration::from_secs(4))? {
+		match read()? {
+			Event::Key(KeyEvent{code,kind,..}) => {
+				if kind == KeyEventKind::Press{
+					match code {
+						Enter => {
+							Ok(Enter)
+						},
+						Char('w') => {
+							Ok(Char('w'))
+						},
+						Char('q') => {
+							Ok(Char('q'))
+						},
+						_=>{Ok(Esc)}
+					}
+				}
+				else {
+					Ok(Esc)
+				}
+			}
+			_=>{Ok(Esc)}
+		}
+	}
+	else {
+		Ok(Esc)
+	}
+}
 struct Options<'a>{
 	selected: bool,
 	options: Vec<&'a str> 
