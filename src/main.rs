@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 use crossterm::execute;
 use crossterm::{
-    event::{self,KeyCode::{*, self},read,Event,KeyEvent, KeyEventKind},
+    event::{self,KeyCode::*,read,Event,KeyEvent, KeyEventKind},
     terminal::{
 		disable_raw_mode, 
 		enable_raw_mode, 
@@ -14,8 +14,8 @@ use crossterm::{
 	},
     ExecutableCommand
 };
+use boilerplate_builder::generate_route;
 mod cli;
-use cli::get_input;
 
 
 
@@ -45,14 +45,7 @@ fn main() {
 
 		println!("{}",options.selected);
 		
-		for (index,option) in options.text.iter().enumerate() {
-			if index == options.selected {
-				println!("\x1B[1;35m {} \x1B[0m",option)
-			}
-			else {
-				println!("{}",option)
-			}
-		}
+		options.print();
 
 		if event::poll(Duration::from_secs(4)).unwrap() {
 			match read().unwrap() {
@@ -67,6 +60,12 @@ fn main() {
 							}
 							Down => {
 								options.selected -=1;
+							}
+							Enter => {
+								print!("{}",clear_scr);
+								generate_route(app_dir,"signup").unwrap();
+								println!("Generated route 'Signup' in app directory");
+								break;
 							}
 							_=>{}
 						}
@@ -105,6 +104,17 @@ struct OptionsList<'a>{
 impl<'a> OptionsList<'a> {
 	fn new(text:Vec<&'a str>,selected:usize) -> Self{
 		OptionsList { text, selected }
+	}
+
+	fn print(&self) {
+		for (index,option) in self.text.iter().enumerate() {
+			if index == self.selected {
+				println!("\x1B[1;35m {} \x1B[0m",option)
+			}
+			else {
+				println!("{}",option)
+			}
+		}
 	}
 }
 

@@ -26,7 +26,7 @@ pub fn file_to_string(path:PathBuf) -> Result<String, io::Error>{
 	return Ok(file_contents);
 }
 
-fn generate_component(component:Component,src_dir:PathBuf){
+pub fn generate_component(component:Component,src_dir:PathBuf){
 	match component {
 		navbar => {
 			fs::write(
@@ -43,7 +43,7 @@ fn generate_component(component:Component,src_dir:PathBuf){
 	}
 }
 
-fn generate_route(app_dir:PathBuf,route_name:&str) -> Result<&str,io::Error>{
+pub fn generate_route(app_dir:PathBuf,route_name:&str) -> Result<&str,io::Error>{
 	match create_dir(app_dir.join(route_name)) {
 		Ok(_) => {
 			let route_dir = app_dir.join(route_name);
