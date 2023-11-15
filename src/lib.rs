@@ -1,6 +1,5 @@
 use std::io::{Read,self};
 use std::fs::File;
-use std::future::Future;
 use std::fs::{create_dir, self};
 use std::path::{PathBuf, Path};
 use Component::*;

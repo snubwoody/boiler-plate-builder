@@ -86,9 +86,7 @@ pub fn cli() -> Result<()>{
 	Ok(())
 }
 
-fn split_layout(){
-	
-}
+
 
 pub fn get_input() -> Result<KeyCode>{
 	if event::poll(Duration::from_secs(4))? {
@@ -118,8 +116,4 @@ pub fn get_input() -> Result<KeyCode>{
 	else {
 		Ok(Esc)
 	}
-}
-struct Options<'a>{
-	selected: bool,
-	options: Vec<&'a str> 
 }

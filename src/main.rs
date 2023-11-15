@@ -2,64 +2,109 @@ use std::io::{self, stdout, Write};
 use std::fs::{create_dir, self};
 use std::env;
 use std::path::PathBuf;
+use std::time::Duration;
+use crossterm::execute;
 use crossterm::{
-	execute,
-	terminal::{EnterAlternateScreen,LeaveAlternateScreen},
-	event::{self,KeyCode::{*, self},read,Event,KeyEvent, KeyEventKind}
+    event::{self,KeyCode::{*, self},read,Event,KeyEvent, KeyEventKind},
+    terminal::{
+		disable_raw_mode, 
+		enable_raw_mode, 
+		EnterAlternateScreen, 
+		LeaveAlternateScreen
+	},
+    ExecutableCommand
 };
 mod cli;
 use cli::get_input;
 
 
 
+
 fn main() {
 	//TODO make sure to make items responsive
-	let args: Vec<_> = env::args().collect();
+	let _args: Vec<_> = env::args().collect();
 
 	let root_dir = PathBuf::from("./next-app");
 	let src_dir = root_dir.join("src");
 	let app_dir = src_dir.join("app");
 
+	let clear_scr = "\x1B[2J";
+	let reset_csr_pos = "\x1B[H";
 	//TODO global.css not clearing as intended
 	init(src_dir);
 
-	//cli();
-	//cli().unwrap();
-
 	execute!(stdout(),EnterAlternateScreen).unwrap();
+	enable_raw_mode().unwrap();
 
-	let options = vec!["Generate Component","Generate route"];
+
+	let mut options = OptionsList::new(vec!["Genarate Component","Generate Route"],0);
 
 	loop {
-		print!("\x1B[2J");
-		print!("\x1B[H");
-		print!("\x1B[1;32mhi");
-		println!("Hi");
+		print!("{}",clear_scr);
+		print!("{}",reset_csr_pos);
+
+		println!("{}",options.selected);
 		
-		options.iter().for_each(|t|println!("{}",t));
-		match get_input().unwrap() {
-			Char('q') => {
-				break;
+		for (index,option) in options.text.iter().enumerate() {
+			if index == options.selected {
+				println!("\x1B[1;35m {} \x1B[0m",option)
 			}
-			_=>{}
+			else {
+				println!("{}",option)
+			}
+		}
+
+		if event::poll(Duration::from_secs(4)).unwrap() {
+			match read().unwrap() {
+				Event::Key(KeyEvent{code,kind,..}) => {
+					if kind == KeyEventKind::Press{
+						match code {
+							Char('q') => {
+								break;
+							},
+							Up => {
+								options.selected +=1;
+							}
+							Down => {
+								options.selected -=1;
+							}
+							_=>{}
+						}
+					}
+					
+				}
+				_=>{}
+			}
 		}
 
 		io::stdout().flush().unwrap();
 	}
 
+	disable_raw_mode().unwrap();
 	execute!(stdout(),LeaveAlternateScreen).unwrap();
 }
 
 fn init(src_dir:PathBuf){
 	match fs::read_dir(src_dir.join("components")) {
-		Ok(files) => {}
+		Ok(_files) => {}
 		Err(err) => {
 
-			if(err.raw_os_error().unwrap() == 3) {
+			if err.raw_os_error().unwrap() == 3 {
 				create_dir(src_dir.join("components")).unwrap()
 			}
 						
 		}
+	}
+}
+
+struct OptionsList<'a>{
+	text: Vec<&'a str>,
+	selected: usize
+}
+
+impl<'a> OptionsList<'a> {
+	fn new(text:Vec<&'a str>,selected:usize) -> Self{
+		OptionsList { text, selected }
 	}
 }
 
