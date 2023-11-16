@@ -30,14 +30,14 @@ fn main() {
 
 	let clear_scr = "\x1B[2J";
 	let reset_csr_pos = "\x1B[H";
+
 	//TODO global.css not clearing as intended
 	init(src_dir);
 
 	execute!(stdout(),EnterAlternateScreen).unwrap();
 	enable_raw_mode().unwrap();
 
-
-	let mut options = OptionsList::new(vec!["Genarate Component","Generate Route"],0);
+	let mut options = OptionsList::new(vec!["Genarate Component","Generate Route","hu"],0);
 
 	loop {
 		print!("{}",clear_scr);
@@ -46,34 +46,22 @@ fn main() {
 		println!("{}",options.selected);
 		
 		options.print();
-
-		if event::poll(Duration::from_secs(4)).unwrap() {
-			match read().unwrap() {
-				Event::Key(KeyEvent{code,kind,..}) => {
-					if kind == KeyEventKind::Press{
-						match code {
-							Char('q') => {
-								break;
-							},
-							Up => {
-								options.selected +=1;
-							}
-							Down => {
-								options.selected -=1;
-							}
-							Enter => {
-								print!("{}",clear_scr);
-								generate_route(app_dir,"signup").unwrap();
-								println!("Generated route 'Signup' in app directory");
-								break;
-							}
-							_=>{}
-						}
-					}
-					
-				}
-				_=>{}
+		
+		match options.poll() {
+			Err(_) => {
+				break;
 			}
+			_=>{}
+		}
+
+		match options.selected {
+			0 => {
+				
+			},
+			1 => {
+				//generate_route(&app_dir, "new").unwrap();
+			}
+			_=>{}
 		}
 
 		io::stdout().flush().unwrap();
@@ -116,8 +104,65 @@ impl<'a> OptionsList<'a> {
 			}
 		}
 	}
+
+	fn increment(&mut self){
+		if self.selected < self.text.len() - 1  {
+			self.selected += 1;
+		}
+		else {
+			self.selected = 0;
+		}
+	}
+
+	fn decrement(&mut self){
+		if self.selected > 0 {
+			self.selected -= 1;
+		}
+		else {
+			self.selected = self.text.len() -1;
+		}
+	}
+
+	fn poll(&mut self) -> Result<(),()> {
+
+		let event = event::poll(Duration::from_secs(4)).unwrap();
+		
+		if !event {
+			()
+		}
+		match read().unwrap() {
+			Event::Key(KeyEvent{code,kind,..}) => {
+				if kind != KeyEventKind::Press{
+					()
+				}
+				match code {
+					Char('q') => {
+						Err(())
+					},
+					Up => {
+						self.increment();
+						Ok(())
+					}
+					Down => {
+						self.decrement();
+						Ok(())
+					}
+					Enter => {
+						//print!("{}",clear_scr);
+						//generate_route(app_dir,"signup").unwrap();
+						//println!("Generated route 'Signup' in app directory");
+						Ok(())
+					}
+					_=>{
+						Ok(())
+					}
+				}
+				
+			}
+			_=>{Ok(())}
+		}
+	}
 }
 
 
-
-
+//TODO handle timeout

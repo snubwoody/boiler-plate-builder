@@ -4,8 +4,6 @@ use std::fs::{create_dir, self};
 use std::path::{PathBuf, Path};
 use Component::*;
 
-
-
 pub enum Component {
 	navbar,
 	button
@@ -43,7 +41,7 @@ pub fn generate_component(component:Component,src_dir:PathBuf){
 	}
 }
 
-pub fn generate_route(app_dir:PathBuf,route_name:&str) -> Result<&str,io::Error>{
+pub fn generate_route<'a>(app_dir:&PathBuf,route_name:&str) -> Result<&'a str,io::Error>{
 	match create_dir(app_dir.join(route_name)) {
 		Ok(_) => {
 			let route_dir = app_dir.join(route_name);
