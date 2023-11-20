@@ -17,14 +17,16 @@ func main() {
 	app_dir := path.Join(src_dir,"app")		
 		
 	cli(src_dir,app_dir)
-	//create_route("login",app_dir)
 	
 }
 
 func cli(src_dir string, app_dir string){
+	//TODO make the component list a list of checkboxes
 	app := tview.NewApplication()
-
+	
 	var input *tview.InputField
+	var list *tview.List
+	var layout *tview.Flex
 
 	input = tview.NewInputField(). 
 				SetLabel("Route name:").
@@ -37,21 +39,30 @@ func cli(src_dir string, app_dir string){
 	component_list := tview.NewList().
 						AddItem("Navbar","",'1',func ()  {
 							create_component("navbar",src_dir)
+							app.Stop()
 						}).
 						AddItem("Button","",'2',func ()  {
 							create_component("button",src_dir)
+							app.Stop()
 						})
 
-	list := tview.NewList().
+	list = tview.NewList().
 			AddItem("Generate component","",'1',func() {
-				app.SetRoot(component_list,true)
+				layout.AddItem(component_list,0,1,true)
+				layout.RemoveItem(list)
+				
 			}).
 			AddItem("Generate route","",'2',func ()  {
-				app.SetRoot(input,true)
-				
+				layout.RemoveItem(list)
+				layout.AddItem(input,0,1,true)
 			})
+			
+	//TODO not working properly in vs code terminal
+	layout = tview.NewFlex().AddItem(list,0,1,true)
+	
+	layout.SetBorder(true).SetTitle("Boiler-plate builder")
 
-	app.SetRoot(list,true).Run()
+	app.SetRoot(layout,true).Run()
 }
 
 func create_component(name string,src_dir string){
