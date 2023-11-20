@@ -27,16 +27,17 @@ func cli(src_dir string, app_dir string){
 	var input *tview.InputField
 	var list *tview.List
 	var layout *tview.Flex
+	var component_list *tview.List
 
 	input = tview.NewInputField(). 
 				SetLabel("Route name:").
 				SetFieldWidth(10).
 				SetDoneFunc(func(key tcell.Key) {
-					create_route(input.GetText(),app_dir)
-					app.Stop()
+					create_route(input.GetText(), app_dir)
+					//app.Stop()	
 				})
 
-	component_list := tview.NewList().
+	component_list = tview.NewList().
 						AddItem("Navbar","",'1',func ()  {
 							create_component("navbar",src_dir)
 							app.Stop()
@@ -50,11 +51,10 @@ func cli(src_dir string, app_dir string){
 			AddItem("Generate component","",'1',func() {
 				layout.AddItem(component_list,0,1,true)
 				layout.RemoveItem(list)
-				
 			}).
 			AddItem("Generate route","",'2',func ()  {
-				layout.RemoveItem(list)
 				layout.AddItem(input,0,1,true)
+				layout.RemoveItem(list)		
 			})
 			
 	//TODO not working properly in vs code terminal
